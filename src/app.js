@@ -8,4 +8,7 @@ app.use("/upload", uploadRouter);
 
 emptyTemp();
 
+// Testing
+function testingAws() {}
+
 export { app };

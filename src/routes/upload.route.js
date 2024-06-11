@@ -3,7 +3,8 @@ import multer from "multer";
 import { uploadImage } from "../controllers/upload.controller.js";
 
 const router = Router();
-const upload = multer({ dest: "public/temp/" });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 router.post("/", upload.single("photo"), uploadImage);
 
