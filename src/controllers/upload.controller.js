@@ -43,7 +43,7 @@ async function uploadImage(req, res) {
 }
 
 async function generateRemedy() {
-  const prompt = `Tell me about Pagani Utopia in 20 words`;
+  const prompt = `Tell me about Pagani Utopia in 2000 words`;
   const result = await model.generateContent(prompt);
 
   return result.response.text();
