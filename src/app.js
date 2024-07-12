@@ -3,8 +3,10 @@ import { router as uploadRouter } from "./routes/upload.route.js";
 import { emptyTemp } from "./utils/emptyDir.js";
 import { ApiError } from "./utils/ApiError.js";
 import { ApiResponse } from "./utils/ApiResponse.js";
+import cors from "cors";
 
 const app = express();
+app.use(cors());
 
 app.use("/upload", uploadRouter);
 

@@ -3,10 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { cors } from "cors";
 
 config();
-app.use(cors());
 
 const s3 = new S3Client({
   region: process.env.AWS_BUCKET_REGION,
@@ -21,8 +19,6 @@ async function uploadImage(req, res) {
   const imageName = uuidv4();
   const imageCreationData = { name: imageName, date: new Date() };
 
-  console.log(req.file);
-
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
     Key: imageName,
@@ -35,16 +31,23 @@ async function uploadImage(req, res) {
 
   Image.create(imageCreationData)
     .then(async () => {
-      fetch("http://127.0.0.1:5000", {
-        method: POST,
+      console.log(`Image add to database`);
+      fetch("http://127.0.0.1:5000/", {
+        method: "POST",
         headers: {
           ContentType: "application/json",
         },
-        body: { name: imageName },
-      }).then(async (response) => {
-        const remedy = await generateRemedy(response);
-        res.json({ message: "Image uploaded", response, remedy });
-      });
+        body: JSON.stringify({ name: imageName }),
+      })
+        .then(async (response) => {
+          console.log(response);
+          const remedy = await generateRemedy(response);
+          res.json({ message: "Image uploaded", response, remedy });
+        })
+        .catch((err) => {
+          console.log(`Error: Unable to send to python file`);
+          res.json({ message: "Unable to analyze the image" });
+        });
     })
     .catch((err) => {
       console.log(`Error: Unable to upload image\n${err}`);
