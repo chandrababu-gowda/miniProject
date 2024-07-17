@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { config } from "dotenv";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import axios from 'axios'
+import axios from "axios";
 
 config();
 
@@ -38,9 +38,8 @@ async function uploadImage(req, res) {
   try {
     await s3.send(command);
     //console.log(res)
-  }
-  catch (e) {
-    console.log("failed to send to s3", e)
+  } catch (e) {
+    console.log("failed to send to s3", e);
   }
 
   Image.create(imageCreationData)
@@ -53,15 +52,17 @@ async function uploadImage(req, res) {
       //   body: { "name": imageName },
 
       // })
-      await axios.post("http://127.0.0.1:5000/", { "name": imageName })
+      await axios
+        .post("http://127.0.0.1:5000/", { name: imageName })
 
         .then(async (response) => {
-          console.log("Sent and returned from python server")
-          // console.log(response.data)
-          const remedy = await generateRemedy(response.data);
-          // console.log(remedy)
-          res.json({ message: "Image uploaded", response: response.data, remedy });
-        }).catch((err) => {
+          console.log("Sent and returned from python server");
+          res.json({
+            message: "Image uploaded",
+            response: response.data,
+          });
+        })
+        .catch((err) => {
           console.log(`Error: Unable to send to python file`);
           res.json({ message: "Unable to analyze the image" });
         });
@@ -72,9 +73,11 @@ async function uploadImage(req, res) {
     });
 }
 
-async function generateRemedy(data) {
-  console.log(data)
-  const prompt = `
+async function generateRemedy(req, res) {
+  try {
+    const { data } = req.body;
+    console.log(data);
+    const prompt = `
   For a banana plant, I have the following standard values and remedies for various nutrient deficiencies:
   - Potassium Deficiency: Foliar application of Potassium Nitrate (13:0:45) @ 5g per litre of water or Sulphate of Potash @ 5 g per litre.
   - Sulphur Deficiency: Spray of elemental sulphur @ 5 g per litre or spray of potassium sulphate @ 5 g per litre recommended or foliar spray of Banana special in Banana @ 5g per litre is recommended.
@@ -98,10 +101,15 @@ async function generateRemedy(data) {
   This data is in the form of objects. Now iterate through the object and generate the remedy. The remedy should be one among those I have given and very short.
   `;
 
+    const result = await model.generateContent(prompt);
 
-  const result = await model.generateContent(prompt);
-  // console.log(result.response)
-  return result.response.text();
+    res.json({
+      message: "Remedy generated",
+      remedy: result.response.text(),
+    });
+  } catch (err) {
+    console.log("failed to generate remedy", err);
+  }
 }
 
-export { uploadImage };
+export { uploadImage, generateRemedy };
