@@ -54,7 +54,6 @@ async function uploadImage(req, res) {
       // })
       await axios
         .post("http://127.0.0.1:5000/", { name: imageName })
-
         .then(async (response) => {
           console.log("Sent and returned from python server");
           res.json({
@@ -103,12 +102,15 @@ async function generateRemedy(req, res) {
 
     const result = await model.generateContent(prompt);
 
-    res.json({
+    res.status(200).json({
       message: "Remedy generated",
       remedy: result.response.text(),
     });
   } catch (err) {
     console.log("failed to generate remedy", err);
+    res.status(400).json({
+      message: "Unable to generate remedy",
+    });
   }
 }
 
